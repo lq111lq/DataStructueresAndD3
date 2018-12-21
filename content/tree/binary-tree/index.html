@@ -79,14 +79,14 @@
       </p>
 
       <div id="well1" class="well" style="height: 600px"></div>
-      
+      <p>一个简单的控制面板：</p>
       <div class="well">
-        <p>在这里，你可以在向查找树插入新的值</p>
         <p><input type="number" id="input" class="form-control" value="500" min="0" max="1000" step="1"></p>
         <p>
           <button type="button" class="btn btn-default" id="insert">
             插入值<code id="insert-code">adtTree.insert(500)</code>
           </button>
+          <button type="button" class="btn btn-default" id="reset">重置树</button>
           <button type="button" class="btn btn-default" id="clear">清空树</button>
         </p>
       </div>
@@ -97,11 +97,19 @@
           adtTree.insert([500,200,150,600,650,250,550])
           var treeRenderer= new TreeRenderer('#well1', adtTree)
 
-          document.getElementById('clear').addEventListener('click', function () {
+          document.getElementById('clear').addEventListener('click', handleClear)
+
+          document.getElementById('reset').addEventListener('click', function () {
+            handleClear()
+            adtTree.insert([500,200,150,600,650,250,550])
+            treeRenderer.render()
+          })
+
+          function handleClear() {
             adtTree = new AdtTree()
             treeRenderer.tree = adtTree
             treeRenderer.render()
-          })
+          }
 
           document.getElementById('insert').addEventListener('click', handleInsert)
           document.getElementById('input').addEventListener('keydown', function(event) {
