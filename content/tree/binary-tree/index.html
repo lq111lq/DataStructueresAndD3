@@ -22,6 +22,11 @@
         border: 1px solid #eee;
         height: auto;
       }
+
+      .breadcrumb {
+        padding: 0px;
+        background: 0px;
+      }
     </style>
   </head>
   <body>
@@ -31,8 +36,14 @@
     <script src="./AdtTree.js"></script>
     <script src="../TreeRenderer.js"></script>
     <div class="container">
-      <h3 class="text-muted">查找树（二叉查找树）</h3>
-      
+      <h4>
+        <ol class="breadcrumb">
+          <li><a href="../../../index.html">目录</a></li>
+          <li><a href="../index.html">树</a></li>
+          <li class="active">查找树（二叉查找树）</li>
+        </ol>
+      </h4>
+
       <dl>
         <dt>二叉查找树</dt>
         <dd>对于二叉查找树中的任意节点X，X的左孩子小于X的值，X的右孩子大于X的值。</dd>
