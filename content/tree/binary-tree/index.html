@@ -56,14 +56,14 @@
 
       <script>
         !function (){
+          var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            styleActiveLine: true,
+            matchBrackets: true,
+            readOnly: true,
+            theme: 'darcula'
+          });
           d3.text('./AdtTree.js').then(function (d) {
-            var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-              lineNumbers: true,
-              styleActiveLine: true,
-              matchBrackets: true,
-              readOnly: true,
-              theme: 'darcula'
-            });
             editor.setValue(d)
           })
         }()
