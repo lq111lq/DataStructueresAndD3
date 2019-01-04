@@ -39,7 +39,7 @@
       <h4>
         <ol class="breadcrumb">
           <li><a href="../../../index.html">目录</a></li>
-          <li><a href="../index.html">树</a></li>
+          <li>树</li>
           <li class="active">查找树（二叉查找树）</li>
         </ol>
       </h4>
@@ -86,6 +86,15 @@
           <button type="button" class="btn btn-default" id="insert">
             插入值<code id="insert-code">adtTree.insert(500)</code>
           </button>
+          <button type="button" class="btn btn-default" id="insert-random">插入随机值</button>
+        </p>
+        <p>
+          <button type="button" class="btn btn-default" id="contains">
+            检查值<code id="contains-code">adtTree.contains(500)</code>
+          </button>
+          <code id="contains-result"></code>
+        </p>
+        <p>
           <button type="button" class="btn btn-default" id="reset">重置树</button>
           <button type="button" class="btn btn-default" id="clear">清空树</button>
         </p>
@@ -112,6 +121,7 @@
           }
 
           document.getElementById('insert').addEventListener('click', handleInsert)
+          document.getElementById('insert-random').addEventListener('click', handleRandomInsert)
           document.getElementById('input').addEventListener('keydown', function(event) {
             if (event.keyCode==13) {
               handleInsert()
@@ -120,17 +130,34 @@
           document.getElementById('input').addEventListener('change',function (event) {
             var value = document.getElementById('input').value
             document.getElementById('insert-code').innerText = 'adtTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'adtTree.contains(' + value + ')'
           })
 
           function handleInsert () {
             var value = document.getElementById('input').value
             adtTree.insert(value)
             treeRenderer.render()
-
-            value = Number(~~(Math.random() * 1000 + 1))
+          }
+          
+          function handleRandomInsert () {
+            var value = Number(~~(Math.random() * 1000 + 1))
+            adtTree.insert(value)
+            treeRenderer.render()
             document.getElementById('input').value = value
             document.getElementById('insert-code').innerText = 'adtTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'adtTree.contains(' + value + ')'
           }
+
+          document.getElementById('contains').addEventListener('click', function () {
+            var value = Number(document.getElementById('input').value)
+
+            if (adtTree.contains(value)) {
+              document.getElementById('contains-result').innerText = 'adtTree.contains(' + value + ') return true'
+            } else {
+              document.getElementById('contains-result').innerText = 'adtTree.contains(' + value + ') return false'
+            }
+            treeRenderer.render()
+          })
         }()
       </script>
 

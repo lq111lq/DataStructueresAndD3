@@ -34,6 +34,7 @@ function TreeRenderer (container, tree) {
 }
 
 TreeRenderer.prototype.render = function (duration) {
+  var self = this
   this.width = this.svg.node().clientWidth
   this.height = this.svg.node().clientHeight
 
@@ -97,7 +98,15 @@ TreeRenderer.prototype.render = function (duration) {
   lineUpdate.exit().remove()
 
   lineEnter.append('line')
-    .attr('stroke', 'gray')
+    .attr('stroke', function(d) {
+      if (
+        self.tree.findPath.indexOf(d.source.data) > -1 &&
+        self.tree.findPath.indexOf(d.target.data) > -1
+      ) {
+        return 'red'
+      }
+      return 'gray'
+    })
     .attr('x1', function (d) {
       return d.target.depth > d.source.depth ? d.target.x : d.source.x
     })
@@ -119,6 +128,15 @@ TreeRenderer.prototype.render = function (duration) {
     })
 
   lineUpdate.transition().duration(duration || 250)
+    .attr('stroke', function(d) {
+      if (
+        self.tree.findPath.indexOf(d.source.data) > -1 &&
+        self.tree.findPath.indexOf(d.target.data) > -1
+      ) {
+        return 'red'
+      }
+      return 'gray'
+    })
     .attr('x1', function (d) {
       return d.target.depth > d.source.depth ? d.target.x : d.source.x
     })
@@ -151,8 +169,14 @@ TreeRenderer.prototype.render = function (duration) {
   node
     .append('circle')
     .attr('r',15)
-    .style('fill', 'white')
-    .attr('stroke', 'gray')
+    .style('stroke', function (d) {
+      if (self.tree.findPath.indexOf(d.data) > -1) {
+        return 'red'
+      } else {
+        return 'gray'
+      }
+    })
+    .attr('fill', 'white')
     
   node
     .append('text')
@@ -191,7 +215,16 @@ TreeRenderer.prototype.render = function (duration) {
       return 'translate(' + d.x + ',' + d.y + ')'
     })
 
-  nodeUpdate.selectAll('circle').style('fill','white')
+  nodeUpdate.selectAll('circle')
+  .style('fill','white')
+  .style('stroke', function (d) {
+    if (self.tree.findPath.indexOf(d.data) > -1) {
+      return 'red'
+    } else {
+      return 'gray'
+    }
+  })
+
   nodeUpdate.selectAll('text.balanceFactor').style('fill', function (d) {
     if (d.data.balanceFactor > 1) {
       return 'red'
