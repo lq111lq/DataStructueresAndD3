@@ -21,6 +21,13 @@ AdtTree.prototype.insert = function (value) {
   }
 }
 
+AdtTree.prototype.remove = function (value) {
+  this.findPath = []
+  if (this.root) {
+    this.root = this.root.remove(value, this.findPath)
+  }
+}
+
 AdtTree.prototype.contains = function (value) {
   this.findPath = []
   if (this.root) {
@@ -42,7 +49,7 @@ AdtTreeNode.prototype.compareTo = function(value) {
 }
 
 AdtTreeNode.prototype.insert = function (value, findPath) {
-  findPath.push(this)
+  findPath && findPath.push(this)
   var compareResult = this.compareTo(value)
   if (compareResult > 0) {
     if (this.left) {
@@ -75,4 +82,27 @@ AdtTreeNode.prototype.contains = function (value, findPath) {
     return this.right.contains(value, findPath)
   }
   return false
+}
+
+AdtTreeNode.prototype.remove = function (value) {
+  var compareResult = this.compareTo(value)
+
+  if (compareResult > 0) {
+    this.left = this.left && this.left.remove(value)
+  } else if (compareResult < 0) {
+    this.right = this.right && this.right.remove(value)
+  } else if(this.left && this.right) {
+    var replacer = this.right.findMin()
+    replacer.right = this.right.remove(replacer.value)
+    replacer.left = this.left
+    return replacer
+  } else {
+    return this.left || this.right
+  }
+
+  return this
+}
+
+AdtTreeNode.prototype.findMin = function () {
+  return this.left ? this.left.findMin() : this
 }

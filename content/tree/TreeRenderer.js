@@ -1,5 +1,6 @@
 function TreeRenderer (container, tree) {
   this.tree = tree
+  this.selectedNode = null
 
   var padding = this.padding = {
     left: 25,
@@ -13,6 +14,7 @@ function TreeRenderer (container, tree) {
     .style('display', 'block')
     .style('height', '100%')
     .style('width', '100%')
+    .style('user-select', 'none')
 
   this.width = this.svg.node().clientWidth
   this.height = this.svg.node().clientHeight
@@ -31,6 +33,15 @@ function TreeRenderer (container, tree) {
 
   window.addEventListener('resize', this.render.bind(this))
   this.render()
+}
+
+TreeRenderer.prototype.setSelectedNode = function (node) {
+  this.selectedNode = node
+  this.render()
+
+  if (typeof this.onSelectedNodeChanged === 'function') {
+    this.onSelectedNodeChanged(node)
+  }
 }
 
 TreeRenderer.prototype.render = function (duration) {
@@ -119,7 +130,7 @@ TreeRenderer.prototype.render = function (duration) {
     .attr('y2', function (d) {
       return d.target.depth > d.source.depth ? d.target.y : d.source.y
     })
-    .transition().duration(duration || 250)
+    .transition().duration(duration || 500)
     .attr('x2', function (d) {
       return d.target.depth <= d.source.depth ? d.target.x : d.source.x
     })
@@ -127,7 +138,7 @@ TreeRenderer.prototype.render = function (duration) {
       return d.target.depth <= d.source.depth ? d.target.y : d.source.y
     })
 
-  lineUpdate.transition().duration(duration || 250)
+  lineUpdate.transition().duration(duration || 500)
     .attr('stroke', function(d) {
       if (
         self.tree.findPath.indexOf(d.source.data) > -1 &&
@@ -157,7 +168,11 @@ TreeRenderer.prototype.render = function (duration) {
     })
 
   var nodeEnter = nodeUpdate.enter()        
-  nodeUpdate.exit().remove()
+  nodeUpdate.exit().each(function (d) {
+    if (self.selectedNode && self.selectedNode.value === d.value) {
+      self.selectedNode = null
+    }
+  }).remove()
   
   var node = nodeEnter.append('g')
     .classed('node', true)
@@ -165,6 +180,9 @@ TreeRenderer.prototype.render = function (duration) {
       return 'translate(' + d.x + ',' + d.y + ')'
     })
     .style('cursor', 'pointer')
+    .on('click',function (d) {
+      self.setSelectedNode(d)
+    })
 
   node
     .append('circle')
@@ -180,6 +198,7 @@ TreeRenderer.prototype.render = function (duration) {
     
   node
     .append('text')
+    .classed('value',true)
     .attr('text-anchor','middle')
     .attr('dy',5)
     .style('fill', 'black')
@@ -210,13 +229,14 @@ TreeRenderer.prototype.render = function (duration) {
     })
 
   nodeUpdate
-  .transition().duration(duration || 250)
+  .transition().duration(duration || 500)
     .attr('transform', function (d) {
       return 'translate(' + d.x + ',' + d.y + ')'
     })
-
   nodeUpdate.selectAll('circle')
-  .style('fill','white')
+  .style('fill',function (d) {
+    return self.selectedNode && self.selectedNode.value === d.value ? 'orange' : 'white'
+  })
   .style('stroke', function (d) {
     if (self.tree.findPath.indexOf(d.data) > -1) {
       return 'red'
@@ -225,6 +245,7 @@ TreeRenderer.prototype.render = function (duration) {
     }
   })
 
+  nodeUpdate.selectAll('text.value').text(function (d) { return d.data.value })
   nodeUpdate.selectAll('text.balanceFactor').style('fill', function (d) {
     if (d.data.balanceFactor > 1) {
       return 'red'

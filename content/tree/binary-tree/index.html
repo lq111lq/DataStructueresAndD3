@@ -93,6 +93,11 @@
           <button type="button" class="btn btn-default" id="insert-random">插入随机值</button>
         </p>
         <p>
+          <button type="button" class="btn btn-default" id="remove">
+            移除值<code id="remove-code">adtTree.remove(500)</code>
+          </button>
+        </p>
+        <p>
           <button type="button" class="btn btn-default" id="contains">
             检查值<code id="contains-code">adtTree.contains(500)</code>
           </button>
@@ -108,7 +113,15 @@
         !function () {
           var adtTree = new AdtTree()
           adtTree.insert([500,200,150,600,650,250,550])
+
           var treeRenderer= new TreeRenderer('#well1', adtTree)
+          treeRenderer.onSelectedNodeChanged = function (node) {
+            var value = node.data.value
+            document.getElementById('input').value = value
+            document.getElementById('insert-code').innerText = 'adtTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'adtTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'adtTree.remove(' + value + ')'
+          }
 
           document.getElementById('clear').addEventListener('click', handleClear)
 
@@ -126,15 +139,12 @@
 
           document.getElementById('insert').addEventListener('click', handleInsert)
           document.getElementById('insert-random').addEventListener('click', handleRandomInsert)
-          document.getElementById('input').addEventListener('keydown', function(event) {
-            if (event.keyCode==13) {
-              handleInsert()
-            }
-          })
+
           document.getElementById('input').addEventListener('change',function (event) {
             var value = document.getElementById('input').value
             document.getElementById('insert-code').innerText = 'adtTree.insert(' + value + ')'
             document.getElementById('contains-code').innerText = 'adtTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'adtTree.remove(' + value + ')'
           })
 
           function handleInsert () {
@@ -142,7 +152,14 @@
             adtTree.insert(value)
             treeRenderer.render()
           }
-          
+
+          document.getElementById('remove').addEventListener('click', handleRemove)
+          function handleRemove () {
+            var value = document.getElementById('input').value
+            adtTree.remove(value)
+            treeRenderer.render()
+          }
+
           function handleRandomInsert () {
             var value = Number(~~(Math.random() * 1000 + 1))
             adtTree.insert(value)
@@ -150,6 +167,7 @@
             document.getElementById('input').value = value
             document.getElementById('insert-code').innerText = 'adtTree.insert(' + value + ')'
             document.getElementById('contains-code').innerText = 'adtTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'adtTree.remove(' + value + ')'
           }
 
           document.getElementById('contains').addEventListener('click', function () {
