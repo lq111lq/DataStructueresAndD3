@@ -1,5 +1,7 @@
 function AdtTree () {
+  // 根节点
   this.root = null
+  // 查找路径
   this.findPath = []
 };
 
