@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>数据结构(D3.js)-平衡二叉树</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.css"
+    >
+    <link 
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/theme/darcula.css"
+    >
+    <style>
+      .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+      }
+
+      .breadcrumb {
+        padding: 0px;
+        background: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/d3@5.7.0/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/mode/javascript/javascript.js"></script>
+    <script src="../adt-tree/AdtTree.js"></script>
+    <script src="./AvlTree.js"></script>
+    <script src="../TreeRenderer.js"></script>
+    <div class="container">
+      <h4>
+        <ol class="breadcrumb">
+          <li><a href="../../../index.html">目录</a></li>
+          <li>树</li>
+          <li class="active">查找树（二叉查找树）</li>
+        </ol>
+      </h4>
+
+      <dl>
+        <dt>二叉树（binary tree）</dt>
+        <dd>二叉树是一颗树，其中每个节点都本能有多于两个的儿子。</dd>
+      </dl>
+      <dl>
+        <dt>二叉查找树（binary search tree）</dt>
+        <dd>二叉查找树是一颗二叉树，并且树中的任意节点X，X的左孩子的值小于X的值，X的右孩子的值大于X的值。</dd>
+      </dl>
+      <dl>
+        <dt>平衡二叉树（binary search tree）</dt>
+        <dd>平衡二叉树带有平衡条件的二叉查找树</dd>
+      </dl>
+
+      <form>
+        <textarea id="code" name="code"></textarea>
+      </form>
+      <br>
+
+      <script>
+        !function (){
+          var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            styleActiveLine: true,
+            matchBrackets: true,
+            readOnly: true,
+            theme: 'darcula'
+          });
+          d3.text('./AvlTree.js').then(function (d) {
+            editor.setValue(d)
+          })
+        }()
+
+      </script>
+
+      <p>
+        通过代码：<br>
+        <code>var avlTree = new avlTree()</code><br>
+        <code>avlTree.insert([500,200,150,600,650,250,550])</code><br>
+        生成一个平衡二叉树。<br>
+        通过<code>TreeRenderer.js</code>渲染，如下：
+      </p>
+
+      <div id="well1" class="well" style="height: 600px"></div>
+      <p>一个简单的控制面板：</p>
+      <div class="well">
+        <p><input type="number" id="input" class="form-control" value="500" min="0" max="1000" step="1"></p>
+        <p>
+          <button type="button" class="btn btn-default" id="insert">
+            插入值<code id="insert-code">avlTree.insert(500)</code>
+          </button>
+          <button type="button" class="btn btn-default" id="insert-random">插入随机值</button>
+        </p>
+        <p>
+          <button type="button" class="btn btn-default" id="remove">
+            移除值<code id="remove-code">avlTree.remove(500)</code>
+          </button>
+        </p>
+        <p>
+          <button type="button" class="btn btn-default" id="contains">
+            检查值<code id="contains-code">avlTree.contains(500)</code>
+          </button>
+          <code id="contains-result"></code>
+        </p>
+        <p>
+          <button type="button" class="btn btn-default" id="reset">重置树</button>
+          <button type="button" class="btn btn-default" id="clear">清空树</button>
+        </p>
+      </div>
+      
+      <script>
+        !function () {
+          var avlTree = new AvlTree()
+          avlTree.insert([500,200,150,600,650,250,550])
+
+          var treeRenderer= new TreeRenderer('#well1', avlTree)
+          treeRenderer.onSelectedNodeChanged = function (node) {
+            var value = node.data.value
+            document.getElementById('input').value = value
+            document.getElementById('insert-code').innerText = 'avlTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'avlTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'avlTree.remove(' + value + ')'
+          }
+
+          document.getElementById('clear').addEventListener('click', handleClear)
+
+          document.getElementById('reset').addEventListener('click', function () {
+            handleClear()
+            avlTree.insert([500,200,150,600,650,250,550])
+            treeRenderer.render()
+          })
+
+          function handleClear() {
+            avlTree = new avlTree()
+            treeRenderer.tree = avlTree
+            treeRenderer.render()
+          }
+
+          document.getElementById('insert').addEventListener('click', handleInsert)
+          document.getElementById('insert-random').addEventListener('click', handleRandomInsert)
+
+          document.getElementById('input').addEventListener('change',function (event) {
+            var value = document.getElementById('input').value
+            document.getElementById('insert-code').innerText = 'avlTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'avlTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'avlTree.remove(' + value + ')'
+          })
+
+          function handleInsert () {
+            var value = document.getElementById('input').value
+            avlTree.insert(value)
+            treeRenderer.render()
+          }
+
+          document.getElementById('remove').addEventListener('click', handleRemove)
+          function handleRemove () {
+            var value = document.getElementById('input').value
+            avlTree.remove(value)
+            treeRenderer.render()
+          }
+
+          function handleRandomInsert () {
+            var value = Number(~~(Math.random() * 1000 + 1))
+            avlTree.insert(value)
+            treeRenderer.render()
+            document.getElementById('input').value = value
+            document.getElementById('insert-code').innerText = 'avlTree.insert(' + value + ')'
+            document.getElementById('contains-code').innerText = 'avlTree.contains(' + value + ')'
+            document.getElementById('remove-code').innerText = 'avlTree.remove(' + value + ')'
+          }
+
+          document.getElementById('contains').addEventListener('click', function () {
+            var value = Number(document.getElementById('input').value)
+
+            if (avlTree.contains(value)) {
+              document.getElementById('contains-result').innerText = 'avlTree.contains(' + value + ') return true'
+            } else {
+              document.getElementById('contains-result').innerText = 'avlTree.contains(' + value + ') return false'
+            }
+            treeRenderer.render()
+          })
+        }()
+      </script>
+
+  </body>
+</html>

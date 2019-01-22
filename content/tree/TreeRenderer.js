@@ -130,7 +130,7 @@ TreeRenderer.prototype.render = function (duration) {
     .attr('y2', function (d) {
       return d.target.depth > d.source.depth ? d.target.y : d.source.y
     })
-    .transition().duration(duration || 500)
+    .transition().duration(duration || 250)
     .attr('x2', function (d) {
       return d.target.depth <= d.source.depth ? d.target.x : d.source.x
     })
@@ -138,7 +138,7 @@ TreeRenderer.prototype.render = function (duration) {
       return d.target.depth <= d.source.depth ? d.target.y : d.source.y
     })
 
-  lineUpdate.transition().duration(duration || 500)
+  lineUpdate.transition().duration(duration || 250)
     .attr('stroke', function(d) {
       if (
         self.tree.findPath.indexOf(d.source.data) > -1 &&
@@ -229,7 +229,7 @@ TreeRenderer.prototype.render = function (duration) {
     })
 
   nodeUpdate
-  .transition().duration(duration || 500)
+  .transition().duration(duration || 250)
     .attr('transform', function (d) {
       return 'translate(' + d.x + ',' + d.y + ')'
     })

@@ -3,7 +3,9 @@ function AdtTree () {
   this.root = null
   // 查找路径
   this.findPath = []
-};
+}
+
+AdtTree.prototype.NodeConstructor = AdtTreeNode
 
 AdtTree.prototype.insert = function (value) {
   this.findPath = []
@@ -15,9 +17,9 @@ AdtTree.prototype.insert = function (value) {
   }
 
   if (this.root) {
-    this.root.insert(value, this.findPath)
+    this.root = this.root.insert(value)
   } else {
-    this.root = new AdtTreeNode(value)
+    this.root = new this.NodeConstructor(value)
   }
 }
 
@@ -48,24 +50,22 @@ AdtTreeNode.prototype.compareTo = function(value) {
   return this.value - value
 }
 
-AdtTreeNode.prototype.insert = function (value, findPath) {
-  findPath && findPath.push(this)
+AdtTreeNode.prototype.insert = function (value) {
   var compareResult = this.compareTo(value)
   if (compareResult > 0) {
     if (this.left) {
-      this.left.insert(value, findPath)
+      this.left = this.left.insert(value)
     } else {
-      this.left = new AdtTreeNode(value)
-      findPath.push(this.left)
+      this.left = new this.constructor(value)
     }
   } else if (compareResult < 0) {
     if (this.right) {
-      this.right.insert(value, findPath)
+      this.right = this.right.insert(value)
     } else {
-      this.right = new AdtTreeNode(value)
-      findPath.push(this.right)
+      this.right = new this.constructor(value)
     }
   }
+  return this
 }
 
 AdtTreeNode.prototype.contains = function (value, findPath) {
