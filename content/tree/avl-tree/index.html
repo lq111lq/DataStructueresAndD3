@@ -70,7 +70,8 @@
             styleActiveLine: true,
             matchBrackets: true,
             readOnly: true,
-            theme: 'darcula'
+            theme: 'darcula',
+            mode: 'javascript'
           });
           d3.text('./AvlTree.js').then(function (d) {
             editor.setValue(d)

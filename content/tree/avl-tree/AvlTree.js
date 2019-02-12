@@ -4,7 +4,7 @@ function AvlTree () {
 
 AvlTree.prototype = Object.create(AdtTree.prototype)
 AvlTree.prototype.constructor = AvlTree
-AvlTree.prototype.NodeConstructor = AvlTreeNode
+AvlTree.prototype.NodeConstructor = AvlTreeNolde
 
 function AvlTreeNode (value) {
   this.value = value

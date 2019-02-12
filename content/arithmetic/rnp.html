@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>四则运算-逆波兰式</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/theme/darcula.css">
+  <style>
+    .CodeMirror {
+      border: 1px solid #eee;
+      height: auto;
+    }
+
+    .breadcrumb {
+      padding: 0px;
+      background: 0px;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/d3@5.7.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script src="./formulaUtil.js"></script>
+  <div class="container">
+    <h3>
+      <ol class="breadcrumb">
+        <li><a href="../../../index.html">目录</a></li>
+        <li>四则运算</li>
+        <li class="active">逆波兰式</li>
+      </ol>
+    </h3>
+    <h3>自定义公式的计算</h3>
+    <p>
+      用一个字符串表示公式。例如：“收入-(房租+水电费+人工费)”。
+      解析这个字符串，获取其中的运算项。根据运算项的值计算处结果。
+    </p>
+
+    <h3>定义</h3>
+    <dl>
+      <dt>中缀表达式</dt>
+      <dd>运算符是处于操作数的中间的表达式。</dd>
+      <dd>例：a + b</dd>
+    </dl>
+
+    <dl>
+      <dt>逆波兰式（Reverse Polish notation，RPN，或逆波兰记法）</dt>
+      <dd>即后缀表达式，即运算符在操作数之后的表达式。</dd>
+      <dd>例1：a - b - c 的逆波兰式为 a b - c - 。</dd>
+      <dd>例2：a - b * c 的逆波兰式为 a - b c * 。</dd>
+      <dd>例3：( a - b ) * c 的逆波兰式为 a b - c * 。</dd>
+      <dd>由例2、例3可见逆波兰式的优势：计算时不需要考虑任何优先规则。</dd>
+    </dl>
+
+    <h3>举个例子</h3>
+    <p>
+      <textarea class="form-control" rows="1" id="formula-textarea">收入-(房租+水电费+人工费)</textarea>
+      <form id="terms">
+
+      </form>
+      运算结果：<span id="result"></span>
+    </p>
+
+    <h4>解析中缀式</h4>
+    <p>首先要完成中缀表达式的解析。区分其中的符号和计算项。
+      <form>
+        <textarea id="code" name="code"></textarea>
+      </form>
+    </p>
+
+    <h4>中缀式转后缀式</h4>
+    <p>
+      将上文中的解析结果转换为后缀式。<br>
+      转换结果如下：
+      <form>
+        <textarea id="code-2" name="code-2"></textarea>
+      </form>
+    </p>
+
+  </div>
+  <script>
+    ! function () {
+      var serializeArray
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        styleActiveLine: true,
+        matchBrackets: true,
+        readOnly: true,
+        theme: 'darcula',
+        mode: 'javascript'
+      });
+      
+      var editor_2 = CodeMirror.fromTextArea(document.getElementById("code-2"), {
+        lineNumbers: true,
+        styleActiveLine: true,
+        matchBrackets: true,
+        readOnly: true,
+        theme: 'darcula',
+        mode: 'javascript'
+      });
+
+      var textarea = $('#formula-textarea')
+
+      textarea.on('keyup', handler)
+      textarea.on('keyup', handler)
+
+      function handler () {
+        var value = textarea.val()
+        var parseResult = parseFormulaStr(value)
+
+        editor.setValue(
+          JSON.stringify(parseResult, null, '  ')
+        )
+
+        var rpnQueue = dal2Rpn(parseResult)
+        editor_2.setValue(
+          JSON.stringify(rpnQueue, null, '  ')
+        )
+
+        var $terms = $('#terms')
+        $terms.empty()
+
+        parseResult.forEach( (element,index) => {
+          if (element.state === 'TERM') {
+            var $formGroup = $('<div></div>').appendTo($terms).addClass('form-group')
+            
+            $('<label></label>')
+              .appendTo($formGroup)
+              .attr('for', element.subString)
+              .text(element.subString)
+            
+            $('<input></input>')
+              .appendTo($formGroup)
+              .addClass('form-control')
+              .attr('type', 'number')
+              .attr('id', element.subString)
+              .attr('name', element.subString)
+              .val(1)
+              .on('change keyup click',function () {
+                serializeArray = $terms.serializeArray()
+                evalResult(rpnQueue)
+              })
+          }
+        })
+        serializeArray = $terms.serializeArray()
+
+        evalResult(rpnQueue)
+      }
+
+      function evalResult (rpnQueue) {
+        function getValue (term) {
+          if (term.state === STATUS.VALUE) {
+            return Number(term.value)
+          } else {
+            var value = serializeArray.find( function (d) {
+              return d.name === term.subString
+            }).value
+            return Number(value)
+          }
+        }
+
+        var result = evalRpn(rpnQueue, function (fir, sec, cur) {
+          let v0 = getValue(fir)
+          let v1 = getValue(sec)
+          let value = NaN
+          switch (cur.subString) {
+            case '+':
+              value = v0 + v1
+              break
+            case '-':
+              value = v0 - v1
+              break
+            case '*':
+              value = v0 * v1
+              break
+            case '/':
+              value = v0 / v1
+              break
+            default:
+              break
+          }
+          return {
+            state: STATUS.VALUE,
+            value: value
+          }
+        })
+
+        $('#result').text(result.value)
+      }
+
+      handler()
+    }()
+  </script>
+</body>
+
+</html>
