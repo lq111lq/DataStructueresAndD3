@@ -30,6 +30,7 @@ Sorter.prototype.sort = function (a) {
 }
 
 Sorter.prototype.less = function (a, i, j) {
+  // this.snapshoot(a, i, j, 'less')
   return a[i].compareTo(a[j]) < 0
 }
 
@@ -37,6 +38,8 @@ Sorter.prototype.exch = function (a, i, j) {
   var t = a[i]
   a[i] = a[j]
   a[j] = t
+
+  this.snapshoot(a, i, j, 'exch')
 }
 
 Sorter.prototype.isSorted = function (a) {

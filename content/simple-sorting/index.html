@@ -34,6 +34,9 @@
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/mode/javascript/javascript.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.5/dist/vue.min.js"></script>
+    <script src="./Sorter.js"></script>
+    <script src="./SelectionSorter.js"></script>
+
     <div class="container">
       <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -51,27 +54,64 @@
               </p>
             </div>
             <button type="button" class="btn btn-default" @click="randomSeriesInput">随机生成</button>
+            <div class="form-group" style="position: relative;height: 200px;">
+              <div v-for="(item,i) in snapshot.array"
+                :style="{
+                  position: 'absolute',
+                  bottom: 0,
+                  background: '#17c0b2',
+                  color: '#ffffff',
+                  width: '15px',
+                  left: i * 30 + 'px',
+                  'padding-top': item.value + 'px',
+                  height: (17 + item.value) + 'px'
+                }"
+              >
+                {{item.value}}
+              </div>
+            </div>
+            <div class="form-group">
+              <input type="range" :max="selectionSorterSnapshots.length - 1" min="0" step="1" v-model="snapshotIndex">
+            </div>
+            <button type="button" class="btn btn-default" @click="play">播放</button>
           </form>
         </div>
       </div>
     </div>
 
     <script>
-      
+      var selectionSorter = new SelectionSorter()
       var app = new Vue({
         el: '#app',
         data: {
           seriesInput: '',
-          series: []
+          series: [],
+          selectionSorterSnapshots: [],
+          snapshotIndex: 0
+        },
+        computed: {
+          snapshot () {
+            return this.selectionSorterSnapshots[this.snapshotIndex] || []
+          }
         },
         watch: {
           seriesInput () {
             this.series = this.seriesInput.split(',')
+            this.snapshotIndex = 0
+
+            var series = this.series.map(function (d) {
+              return new CompareableValue(Number(d))
+            })
+
+            selectionSorter.clearSnapshots()
+            selectionSorter.sort(series)
+            this.selectionSorterSnapshots = selectionSorter.snapshots
           }
         },
         methods: {
           randomSeriesInput () {
             var seriesInput = ''
+            this.snapshotIndex = 0
 
             for (let i = 0; i < 20; i++) {
               seriesInput += ~~(Math.random()*100)
@@ -79,6 +119,17 @@
             }
 
             this.seriesInput = seriesInput
+          },
+          play () {
+            this.snapshotIndex = 0
+
+            var self = this
+            var Interval = window.setInterval(function () {
+              self.snapshotIndex++
+              if (self.snapshotIndex === self.selectionSorterSnapshots.length - 1) {
+                window.clearInterval(Interval)
+              }
+            }, 100)
           }
         },
         mounted () {
