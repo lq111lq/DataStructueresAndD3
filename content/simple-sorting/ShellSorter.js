@@ -5,6 +5,7 @@ function ShellSorter () {
 ShellSorter.prototype = Object.create(Sorter.prototype)
 ShellSorter.prototype.constructor = ShellSorter
 ShellSorter.prototype.sort = function (a) {
+  this.snapshoot(a)
   var h = 1
   var N = a.length
 

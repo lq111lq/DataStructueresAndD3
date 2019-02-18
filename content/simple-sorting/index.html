@@ -38,6 +38,8 @@
     <script src="./SelectionSorter.js"></script>
     <script src="./InsertionSorter.js"></script>
     <script src="./ShellSorter.js"></script>
+    <script src="./MergeSorter.js"></script>
+    <script src="./QuickSorter.js"></script>
 
     <div class="container">
       <div class="row">
@@ -56,7 +58,7 @@
               </p>
             </div>
             <button type="button" class="btn btn-default" @click="randomSeriesInput">随机生成</button><br>
-            <div class="form-group" style="position: relative;height: 200px;">
+            <div class="form-group" style="position: relative;height: 150px;">
               <div v-for="(item,i) in selectionSnapshot"
                 :style="{
                   position: 'absolute',
@@ -74,7 +76,7 @@
             </div>
             选择排序
 
-            <div class="form-group" style="position: relative;height: 200px;">
+            <div class="form-group" style="position: relative;height: 150px;">
               <div v-for="(item,i) in insertionSnapshot"
                 :style="{
                   position: 'absolute',
@@ -92,7 +94,7 @@
             </div>
             插入排序
 
-            <div class="form-group" style="position: relative;height: 200px;">
+            <div class="form-group" style="position: relative;height: 150px;">
               <div v-for="(item,i) in shellSnapshot"
                 :style="{
                   position: 'absolute',
@@ -109,6 +111,43 @@
               </div>
             </div>
             希尔排序
+
+            <div class="form-group" style="position: relative;height: 150px;">
+              <div v-for="(item,i) in mergeSnapshot"
+                :style="{
+                  position: 'absolute',
+                  bottom: 0,
+                  background: item.isLess ? 'orange' : item.isExch ? 'blue' : '#17c0b2',
+                  color: '#ffffff',
+                  width: '15px',
+                  left: i * 30 + 'px',
+                  'padding-top': item.value + 'px',
+                  height: (17 + item.value) + 'px'
+                }"
+              >
+                {{item.value}}
+              </div>
+            </div>
+            归并排序
+
+            <div class="form-group" style="position: relative;height: 150px;">
+              <div v-for="(item,i) in quickSnapshot"
+                :style="{
+                  position: 'absolute',
+                  bottom: 0,
+                  background: item.isLess ? 'orange' : item.isExch ? 'blue' : '#17c0b2',
+                  color: '#ffffff',
+                  width: '15px',
+                  left: i * 30 + 'px',
+                  'padding-top': item.value + 'px',
+                  height: (17 + item.value) + 'px'
+                }"
+              >
+                {{item.value}}
+              </div>
+            </div>
+            快速排序
+
             <div class="form-group">
               <input type="range" :max="maxIndex" min="0" step="1" v-model="snapshotIndex">
             </div>
@@ -122,6 +161,8 @@
       var selectionSorter = new SelectionSorter()
       var insertionSorter = new InsertionSorter()
       var shellSorter = new ShellSorter()
+      var mergeSorter = new MergeSorter()
+      var quickSorter = new QuickSorter()
 
       var app = new Vue({
         el: '#app',
@@ -131,13 +172,18 @@
           selectionSorterSnapshots: [],
           insertionSorterSnapshots: [],
           shellSorterSnapshots: [],
+          mergeSorterSnapshots: [],
+          quickSorterSnapshots: [],
           snapshotIndex: 0
         },
         computed: {
           maxIndex () {
             return Math.max(
               this.selectionSorterSnapshots.length,
-              this.insertionSorterSnapshots.length
+              this.insertionSorterSnapshots.length,
+              this.shellSorterSnapshots.length,
+              this.mergeSorterSnapshots.length,
+              this.quickSorterSnapshots.length
             ) - 1
           },
           selectionSnapshot () {
@@ -148,6 +194,12 @@
           },
           shellSnapshot () {
             return this.getSnapshot(this.shellSorterSnapshots, this.snapshotIndex)
+          },
+          mergeSnapshot () {
+            return this.getSnapshot(this.mergeSorterSnapshots, this.snapshotIndex)
+          },
+          quickSnapshot () {
+            return this.getSnapshot(this.quickSorterSnapshots, this.snapshotIndex)
           }
         },
         watch: {
@@ -179,12 +231,28 @@
             shellSorter.sort(series)
             this.shellSorterSnapshots = shellSorter.snapshots
 
+            series = this.series.map(function (d) {
+              return new CompareableValue(Number(d))
+            })
+
+            mergeSorter.clearSnapshots()
+            mergeSorter.sort(series)
+            this.mergeSorterSnapshots = mergeSorter.snapshots
+
+            series = this.series.map(function (d) {
+              return new CompareableValue(Number(d))
+            })
+
+            quickSorter.clearSnapshots()
+            quickSorter.sort(series)
+            this.quickSorterSnapshots = quickSorter.snapshots
           }
         },
         methods: {
           randomSeriesInput () {
             var seriesInput = ''
             this.snapshotIndex = 0
+            window.clearInterval(this._interval)
 
             for (let i = 0; i < 40; i++) {
               seriesInput += ~~(Math.random()*100)
@@ -199,10 +267,11 @@
             this.snapshotIndex = 0
 
             var self = this
-            var Interval = window.setInterval(function () {
+            window.clearInterval(this._interval)
+            this._interval = window.setInterval(function () {
               self.snapshotIndex++
               if (self.snapshotIndex === self.maxIndex) {
-                window.clearInterval(Interval)
+                window.clearInterval(self._interval)
               }
             }, 10)
           },
