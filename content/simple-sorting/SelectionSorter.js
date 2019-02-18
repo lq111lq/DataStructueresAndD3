@@ -12,7 +12,7 @@ SelectionSorter.prototype.sort = function (a) {
         min = j
       }
     }
-    this.exch(a, i, min)
+    i !== min && this.exch(a, i, min)
   }
   return a
 }

@@ -9,7 +9,9 @@ Sorter.prototype.snapshoot = function (a, i, j, type) {
     return {
       id: d.id,
       value: d.value,
-      index: index
+      index: index,
+      isExch: type === 'exch' && (index === i || index === j),
+      isLess: type === 'less' && (index === i || index === j)
     }
   })
 
@@ -30,7 +32,7 @@ Sorter.prototype.sort = function (a) {
 }
 
 Sorter.prototype.less = function (a, i, j) {
-  // this.snapshoot(a, i, j, 'less')
+  this.snapshoot(a, i, j, 'less')
   return a[i].compareTo(a[j]) < 0
 }
 

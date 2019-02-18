@@ -33,9 +33,11 @@
     <script src="https://cdn.jsdelivr.net/npm/d3@5.7.0/dist/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/lib/codemirror.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.42.0/mode/javascript/javascript.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.5/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.5/dist/vue.js"></script>
     <script src="./Sorter.js"></script>
     <script src="./SelectionSorter.js"></script>
+    <script src="./InsertionSorter.js"></script>
+    <script src="./ShellSorter.js"></script>
 
     <div class="container">
       <div class="row">
@@ -53,13 +55,13 @@
                 </template>
               </p>
             </div>
-            <button type="button" class="btn btn-default" @click="randomSeriesInput">随机生成</button>
+            <button type="button" class="btn btn-default" @click="randomSeriesInput">随机生成</button><br>
             <div class="form-group" style="position: relative;height: 200px;">
-              <div v-for="(item,i) in snapshot.array"
+              <div v-for="(item,i) in selectionSnapshot"
                 :style="{
                   position: 'absolute',
                   bottom: 0,
-                  background: '#17c0b2',
+                  background: item.isLess ? 'orange' : item.isExch ? 'blue' : '#17c0b2',
                   color: '#ffffff',
                   width: '15px',
                   left: i * 30 + 'px',
@@ -70,8 +72,45 @@
                 {{item.value}}
               </div>
             </div>
+            选择排序
+
+            <div class="form-group" style="position: relative;height: 200px;">
+              <div v-for="(item,i) in insertionSnapshot"
+                :style="{
+                  position: 'absolute',
+                  bottom: 0,
+                  background: item.isLess ? 'orange' : item.isExch ? 'blue' : '#17c0b2',
+                  color: '#ffffff',
+                  width: '15px',
+                  left: i * 30 + 'px',
+                  'padding-top': item.value + 'px',
+                  height: (17 + item.value) + 'px'
+                }"
+              >
+                {{item.value}}
+              </div>
+            </div>
+            插入排序
+
+            <div class="form-group" style="position: relative;height: 200px;">
+              <div v-for="(item,i) in shellSnapshot"
+                :style="{
+                  position: 'absolute',
+                  bottom: 0,
+                  background: item.isLess ? 'orange' : item.isExch ? 'blue' : '#17c0b2',
+                  color: '#ffffff',
+                  width: '15px',
+                  left: i * 30 + 'px',
+                  'padding-top': item.value + 'px',
+                  height: (17 + item.value) + 'px'
+                }"
+              >
+                {{item.value}}
+              </div>
+            </div>
+            希尔排序
             <div class="form-group">
-              <input type="range" :max="selectionSorterSnapshots.length - 1" min="0" step="1" v-model="snapshotIndex">
+              <input type="range" :max="maxIndex" min="0" step="1" v-model="snapshotIndex">
             </div>
             <button type="button" class="btn btn-default" @click="play">播放</button>
           </form>
@@ -81,17 +120,34 @@
 
     <script>
       var selectionSorter = new SelectionSorter()
+      var insertionSorter = new InsertionSorter()
+      var shellSorter = new ShellSorter()
+
       var app = new Vue({
         el: '#app',
         data: {
           seriesInput: '',
           series: [],
           selectionSorterSnapshots: [],
+          insertionSorterSnapshots: [],
+          shellSorterSnapshots: [],
           snapshotIndex: 0
         },
         computed: {
-          snapshot () {
-            return this.selectionSorterSnapshots[this.snapshotIndex] || []
+          maxIndex () {
+            return Math.max(
+              this.selectionSorterSnapshots.length,
+              this.insertionSorterSnapshots.length
+            ) - 1
+          },
+          selectionSnapshot () {
+            return this.getSnapshot(this.selectionSorterSnapshots, this.snapshotIndex)
+          },
+          insertionSnapshot () {
+            return this.getSnapshot(this.insertionSorterSnapshots, this.snapshotIndex)
+          },
+          shellSnapshot () {
+            return this.getSnapshot(this.shellSorterSnapshots, this.snapshotIndex)
           }
         },
         watch: {
@@ -106,6 +162,23 @@
             selectionSorter.clearSnapshots()
             selectionSorter.sort(series)
             this.selectionSorterSnapshots = selectionSorter.snapshots
+
+            series = this.series.map(function (d) {
+              return new CompareableValue(Number(d))
+            })
+
+            insertionSorter.clearSnapshots()
+            insertionSorter.sort(series)
+            this.insertionSorterSnapshots = insertionSorter.snapshots
+
+            series = this.series.map(function (d) {
+              return new CompareableValue(Number(d))
+            })
+
+            shellSorter.clearSnapshots()
+            shellSorter.sort(series)
+            this.shellSorterSnapshots = shellSorter.snapshots
+
           }
         },
         methods: {
@@ -115,7 +188,9 @@
 
             for (let i = 0; i < 20; i++) {
               seriesInput += ~~(Math.random()*100)
-              seriesInput += ','
+              if (i < 19) {
+                seriesInput += ','
+              }
             }
 
             this.seriesInput = seriesInput
@@ -126,10 +201,22 @@
             var self = this
             var Interval = window.setInterval(function () {
               self.snapshotIndex++
-              if (self.snapshotIndex === self.selectionSorterSnapshots.length - 1) {
+              if (self.snapshotIndex === self.maxIndex) {
                 window.clearInterval(Interval)
               }
-            }, 100)
+            }, 10)
+          },
+          getSnapshot (snapshots, index) {
+            if (snapshots && snapshots.length) {
+              if (index >= snapshots.length) {
+                index = snapshots.length - 1
+              }
+
+              var snapshot = snapshots[index]
+
+              return snapshot.array
+            }
+            return []
           }
         },
         mounted () {
